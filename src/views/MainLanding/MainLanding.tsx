@@ -3,6 +3,7 @@ import { Box, Button, Toolbar, Typography } from "@mui/material";
 import HeroBanner, { HeroBannerProps } from "../../components/Hero";
 import { heroImages } from "./HeroImages";
 import NavBar from "../../components/NavBar";
+import { Link } from "react-router-dom";
 
 
 const MainLandingView = () => {
@@ -30,7 +31,10 @@ const CalledToActionGroup = styled(Box)({
 const CallToAction = () => {
 	return (
 		<CalledToActionGroup>
-			<Button variant={"contained"}>Sign Up</Button>
+			{/* <Link component={NavLink} variant="button" to={"/signup"}>Sign Up</Link> */}
+			<Button component={Link}  to="/signup" variant={"contained"}>
+				Sign Up
+			</Button>
 			<Button>Learn More</Button>
 		</CalledToActionGroup>
 	);

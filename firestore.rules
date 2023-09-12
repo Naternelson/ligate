@@ -1,0 +1,110 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write;
+      
+    }
+			// ====================
+			// Global Functions
+			// ====================
+			function requestHasUser(){
+      	return request.auth.uid != null;
+      }
+      function resourceIsValidAddress(address){
+      	return address != null && 
+        	address.city != null && 
+          address.state != null && 
+          address.state.size() == 2;
+      }
+      function resourceIsValidLeadership(leadership){
+        return leadership != null &&
+          leadership.primary != null  && 
+          leadership.primary.last != null && 
+          leadership.firstCounselor != null && 
+          leadership.firstCounselor.last != null &&
+          leadership.secondCounselor != null &&
+          leadership.secondCounselor.last != null;
+      }
+    
+    match /stakes/{stakeID}{
+    
+    	// ====================
+			// Stake Functions
+			// ====================
+    	function userIsStakeEditor(){
+      	return get(/databases/$(database)/documents/stakes/$(stakeID)/private/permissions).data.roles[request.auth.uid] in ["owner", "editor"];
+      }
+      function userIsStakeOwner(){
+      	return get(/databases/$(database)/documents/stakes/$(stakeID)/private/permissions).data.roles[request.auth.uid] == "owner"
+      }
+      function resourceIsValidStakeType(data){
+      	return data.type in ["ysa", "stake", "district", 'temp'];
+      }
+      function resourceIsValidStake(){
+      	let data = request.resource.data;
+        return resourceIsValidStakeType(data) &&
+        	resourceIsValidLeadership(data.leadership) && 
+          resourceIsValidAddress(data.address);
+      }
+      
+      // ====================
+			// Stake Permissions
+			// ====================
+			allow read;
+      allow create: if requestHasUser() && resourceIsValidStake()
+      allow update: if userIsStakeEditor() && resourceIsValidStake();
+      allow delete: if userIsStakeOwner();
+      
+      match /private/permissions {
+      
+        // ====================
+        // Private Roles + Permissions for Stake
+        // ====================
+      	allow create: if requestHasUser();
+        allow read: if userIsStakeEditor();
+        allow update, delete: if userIsStakeOwner();
+      }
+			
+      match /wards/{wardID} {
+      	// ====================
+        // Ward Functions
+        // ====================
+        function userIsWardEditor(){
+      	return userIsStakeEditor() || get(/databases/$(database)/documents/stakes/$(stakeID)/wards/$(wardID)/private/permissions).data.roles[request.auth.uid] in ["owner", "editor"];
+      	}
+        function userIsWardOwner(){
+          return userIsStakeOwner() || get(/databases/$(database)/documents/stakes/$(stakeID)/wards/$(wardID)/private/permissions).data.roles[request.auth.uid] == "owner"
+        }
+        function resourceIsValidWardType(data){
+          return data.type in ["ysa", "ward", "sa", "branch", 'temp'];
+        }
+        function resourceIsValidWard(){
+          let data = request.resource.data;
+          return resourceIsValidWardType(data) &&
+            resourceIsValidLeadership(data.leadership) && 
+            resourceIsValidAddress(data.address);
+        }
+        // ====================
+        // Ward Permissions
+        // ====================
+        allow read;
+        allow create: if requestHasUser() && resourceIsValidWard()
+        allow update: if userIsWardEditor() && resourceIsValidWard();
+        allow delete: if userIsWardOwner();
+
+        match /private/permissions {
+
+          // ====================
+          // Private Roles + Permissions for Stake
+          // ====================
+          allow create: if requestHasUser();
+          allow read: if userIsWardEditor();
+          allow update, delete: if userIsWardOwner();
+          
+        }
+        
+      }
+    }
+  }
+}

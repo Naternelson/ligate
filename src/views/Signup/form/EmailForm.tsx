@@ -76,14 +76,14 @@ const StyledTypography = styled(Typography)({
 });
 
 const useSignupHook = () => {
-	const submitted = useState(false);
+	const [submitSuccess, setSubmitSuccess] = useState(false);
 	const form = useForm({ mode: "onChange", defaultValues: { email: "" } });
 	const { formState, handleSubmit, getFieldState, register } = form;
 	const disableSubmit = formState.isSubmitting || getFieldState("email").invalid;
 
 	const onSubmit = handleSubmit(async (data) => {
 		await sendEmailLink(data.email);
-		submitted[1](true);
+		setSubmitSuccess(true);
 		form.clearErrors();
 		form.reset();
 	});
@@ -100,7 +100,7 @@ const useSignupHook = () => {
 
 	const submitButton: ButtonProps = { disabled: disableSubmit, type: "submit" };
 
-	return { form, onSubmit, emailField, submitButton, submitSuccess: submitted[0] };
+	return { form, onSubmit, emailField, submitButton, submitSuccess };
 };
 
 export default EmailForm;
@@ -108,8 +108,12 @@ export default EmailForm;
 const sendEmailLink = async (email: string) => {
 	// Send an email link to signup or signin a user through Firebase Auth
 	const auth = getAuth();
+    const customActionCode = {
+        ...actionCodeSettings,
+        url: `${actionCodeSettings.url}/finishSignup?email=${encodeURIComponent(email)}`,
+    }
 	try {
-		await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+		await sendSignInLinkToEmail(auth, email, customActionCode);
 		window.localStorage.setItem("emailForSignIn", email);
 	} catch (err) {
 		console.log("error", err);

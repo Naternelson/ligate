@@ -35,7 +35,7 @@ export const analyticsInstance = (app: FirebaseApp) => getAnalytics(app);
 export default initializeFirebaseApp;
 
 export const actionCodeSettings: ActionCodeSettings = {
-	url: "http://localhost:3000/finishSignUp",
+	url: "http://localhost:3000",
 	handleCodeInApp: true,
 	dynamicLinkDomain: "ligate-ff19a.firebaseapp.com",
 };

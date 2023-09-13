@@ -11,7 +11,7 @@ export type Profile = Partial<
 		gender: string;
 		pronouns: string;
 		birthdate: string;
-        images: string[];
+		images: string[];
 	} & Address
 >;
 
@@ -56,7 +56,6 @@ export type Calling = Partial<{
 	calledDate: string;
 	sustainedDate: string;
 	releasedDate: string;
-    memberIds: string[];
 }>;
 
 /**
@@ -117,26 +116,32 @@ export type AuthState = Partial<{
 			tenantId: User["tenantId"];
 			uid: User["uid"];
 			profileId: string;
+			unitID: [string] | null;
+			callingID: [string] | null;
+			roleID: [string] | null;
 		}
 	> | null;
 	userSignedIn: boolean;
 	unit: Unit[] | null;
 	calling: Calling[] | null;
 	role: Role[] | null;
+	tempEmail: string;
 }>;
 
 /**
  * Represents the members state of the application.
  */
-export type MemberData = Partial<Profile & {
-    unit: Unit
-    id: string;
-    calling: Calling[];
-    uid: string;
-    templeRecommend: boolean;
-    activity: string
-    addressConfirmed: boolean; 
-}>
+export type MemberData = Partial<
+	Profile & {
+		unit: Unit;
+		id: string;
+		calling: Calling[];
+		uid: string;
+		templeRecommend: boolean;
+		activity: string;
+		addressConfirmed: boolean;
+	}
+>;
 
 /**
  * Represents the main state of the application.
@@ -147,8 +152,8 @@ export interface AppState {
 		data: { [unitID: string]: Unit };
 		unitIds: string[];
 	};
-    members?: {
-        data: { [memberID: string]: MemberData };
-        memberIds: string[];
-    }
+	members?: {
+		data: { [memberID: string]: MemberData };
+		memberIds: string[];
+	};
 }

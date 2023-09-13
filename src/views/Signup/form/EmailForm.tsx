@@ -4,6 +4,8 @@ import { actionCodeSettings } from "../../../firebase.config";
 import { getAuth, sendSignInLinkToEmail } from "firebase/auth";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setTempEmail } from "../../../redux/slices/auth";
 
 const EmailForm = () => {
 	const { form, onSubmit, emailField, submitButton, submitSuccess } = useSignupHook();
@@ -76,13 +78,14 @@ const StyledTypography = styled(Typography)({
 });
 
 const useSignupHook = () => {
+    const dispatch = useDispatch();
 	const [submitSuccess, setSubmitSuccess] = useState(false);
 	const form = useForm({ mode: "onChange", defaultValues: { email: "" } });
 	const { formState, handleSubmit, getFieldState, register } = form;
 	const disableSubmit = formState.isSubmitting || getFieldState("email").invalid;
 
 	const onSubmit = handleSubmit(async (data) => {
-		await sendEmailLink(data.email);
+		await sendEmailLink(data.email, dispatch);
 		setSubmitSuccess(true);
 		form.clearErrors();
 		form.reset();
@@ -105,7 +108,7 @@ const useSignupHook = () => {
 
 export default EmailForm;
 
-const sendEmailLink = async (email: string) => {
+const sendEmailLink = async (email: string, dispatch:ReturnType<typeof useDispatch>) => {
 	// Send an email link to signup or signin a user through Firebase Auth
 	const auth = getAuth();
     const customActionCode = {
@@ -114,7 +117,7 @@ const sendEmailLink = async (email: string) => {
     }
 	try {
 		await sendSignInLinkToEmail(auth, email, customActionCode);
-		window.localStorage.setItem("emailForSignIn", email);
+		dispatch(setTempEmail(email))
 	} catch (err) {
 		console.log("error", err);
 	}

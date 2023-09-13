@@ -21,6 +21,15 @@ const unitsSlice = createSlice({
 				state.unitIds.push(unit.id);
 			}
 		},
+		insertUnits: (state, action: PayloadAction<RequireProperty<Unit, "id">[]>) => {
+			const units = action.payload;
+			units.forEach((unit) => {
+				state.data[unit.id] = unit;
+				if (!state.unitIds.includes(unit.id)) {
+					state.unitIds.push(unit.id);
+				}
+			});
+		},
 		// Removes a unit by its ID.
 		removeUnit: (state, action: PayloadAction<string>) => {
 			const unitId = action.payload;
@@ -37,7 +46,7 @@ const unitsSlice = createSlice({
 });
 
 // Export actions to be used in components/dispatches.
-export const { upsertUnit, removeUnit, setUnits } = unitsSlice.actions;
+export const { upsertUnit, removeUnit, setUnits, insertUnits } = unitsSlice.actions;
 
 // Export the reducer for the store.
 export default unitsSlice.reducer;

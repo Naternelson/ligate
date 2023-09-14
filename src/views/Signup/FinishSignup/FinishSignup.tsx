@@ -30,9 +30,7 @@ export const FinishSignup = () => {
 				Let's finish signing you up!
 			</Typography>
 			<Divider />
-			<FormProvider>
 
-			</FormProvider>
 		</FinishSignupViewStyled>
 	);
 };
@@ -44,9 +42,11 @@ const useSigninLinkHandler = async () => {
 	const isLink = isSignInWithEmailLink(getAuth(), window.location.href);
 	const appEmail = urlQuery.get("email") || tempEmail;
 	useEffect(() => {
+		console.log({isLink, appEmail})
 		async function signin(email: string) {
 			try {
-				await signInWithEmailLink(getAuth(), email, window.location.href);
+				const u = await signInWithEmailLink(getAuth(), email, window.location.href);
+				console.log(u);
 				dispatch(clearTempEmail());
 			} catch (error) {
 				console.error(error);
@@ -55,4 +55,6 @@ const useSigninLinkHandler = async () => {
 		if (isLink && appEmail) signin(appEmail);
 		if (isLink && !appEmail) console.error("No email provided");
 	}, [appEmail, isLink, dispatch]);
+
+
 };

@@ -1,11 +1,12 @@
 // Required imports
 import { Dispatch } from "@reduxjs/toolkit";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { User, getAuth, onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { userSignedIn, userSignedOut } from "../../redux/slices/auth";
 import { AuthState } from "../../redux/store.type";
 import { onSnapshot } from "firebase/firestore";
 import { getDocRef } from "../../utility";
+import { get } from "http";
 
 export const useAuthListener = (dispatch: Dispatch) => {
 	const [signedIn, setSignedIn] = useState<string | false>(false);
@@ -14,6 +15,7 @@ export const useAuthListener = (dispatch: Dispatch) => {
 	useEffect(() => {
 		// If user is authenticated, store the UID, otherwise store 'false'
 		return onAuthStateChanged(getAuth(), (user) => {
+			console.log({ user, message: "Signing in/out" })
 			setSignedIn(user ? user.uid : false);
 		});
 	}, []);
@@ -34,7 +36,9 @@ export const useAuthListener = (dispatch: Dispatch) => {
 			if (doc.exists()) {
 				dispatch(userSignedIn(doc.data() as AuthState["user"]));
 			} else {
-				dispatch(userSignedOut());
+				const user = getAuth().currentUser;
+				if (!user) return;
+				dispatch(userSignedIn(constructUser(user)));
 			}
 		});
 
@@ -42,3 +46,20 @@ export const useAuthListener = (dispatch: Dispatch) => {
 		return () => unsubscribe();
 	}, [signedIn]);
 };
+
+const constructUser = (user: User): AuthState["user"] => {
+	return {
+		id: user.uid,
+		displayName: user.displayName,
+		email: user.email,
+		emailVerified: user.emailVerified,
+		isAnonymous: user.isAnonymous,
+		phoneNumber: user.phoneNumber,
+		photoURL: user.photoURL,
+		tenantId: user.tenantId,
+		uid: user.uid,
+		unitID: null, 
+		callingID: null,
+		roleID: null,
+	}
+}

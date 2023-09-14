@@ -13,8 +13,8 @@ const authSlice = createSlice({
 			state.userSignedIn = true;
 		},
 		// Handles user signing out.
-		userSignedOut: () => {
-			return {};
+		userSignedOut: (state) => {
+			return { tempEmail: state.tempEmail};
 		},
 		// Sets the user's associated unit. If no unit is assigned, sets to null.
 		setUserUnit: (state, action: PayloadAction<Unit[] | null>) => {
